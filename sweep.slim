@@ -1,0 +1,37 @@
+initialize() {
+	initializeTreeSeq();
+	initializeMutationRate(1e-8);
+	initializeMutationType("m2", 0.5, "g", -0.01, 1.0); // deleterious
+	initializeMutationType("m3", 1.0, "f", 0.1); // introduced
+	initializeGenomicElementType("g1", m2, 1.0);
+	initializeGenomicElement(g1, 0, 4e6-1);
+	initializeRecombinationRate(1e-8);
+}
+1 {
+	defineConstant("simID", getSeed());
+	sim.addSubpop("p1", 10000);
+}
+5000 late() {
+	target = sample(p1.genomes, 1);
+	target.addNewDrawnMutation(m3, 2e6);
+	sim.treeSeqOutput("/tmp/slim_" + simID + ".trees");
+}
+5000:100000 late() {
+	if (sim.countOfMutationsOfType(m3) == 0) {
+		if (sum(sim.substitutions.mutationType == m3) == 1) {
+			cat(simID + ": FIXED\n");
+			sim.treeSeqOutput("/Users/kmt/Dropbox/Research/sweeps/iHA/sweep.trees");
+			sim.simulationFinished();
+		} else {
+			cat(simID + ": LOST - RESTARTING\n");
+			
+			sim.readFromPopulationFile("/tmp/slim_" + simID + ".trees");
+			setSeed(rdunif(1, 0, asInteger(2^32) - 1));
+		}
+	}
+} 
+
+//6000 late() {
+//			sim.treeSeqOutput("/Users/kmt/Dropbox/Research/sweeps/iHA/background.trees");
+//			sim.simulationFinished();
+//}

@@ -1,0 +1,59 @@
+initialize() {
+	
+	initializeTreeSeq();
+	initializeMutationRate(0);
+	initializeMutationType("m1", 0.5, "f", 0.0);
+	initializeGenomicElementType("g1", m1, 1.0);
+	initializeMutationType("m3", 1.0, "f", 0.05); // introduced
+	initializeGenomicElement(g1, 0, 10e6-1);
+	initializeRecombinationRate(1e-8);
+	
+	//	initializeTreeSeq();
+	//	initializeMutationRate(1e-8);
+	//	initializeMutationType("m2", 0.5, "g", -0.01, 1.0); // deleterious
+	//	initializeMutationType("m3", 1.0, "f", 0.1); // introduced
+	//	initializeGenomicElementType("g1", m2, 1.0);
+	//	initializeGenomicElement(g1, 0, 4e6-1);
+	//	initializeRecombinationRate(1e-8);
+}
+1 {
+	defineConstant("simID", getSeed());
+	sim.addSubpop("p1", 20000);
+}
+10000 late() {
+	target = sample(p1.genomes, 1);
+	target.addNewDrawnMutation(m3, 5e6);
+	sim.treeSeqOutput("/tmp/slim_" + simID + ".trees");
+}
+10000:100000 late() {
+	if (sim.countOfMutationsOfType(m3) == 0) {
+		if (sum(sim.substitutions.mutationType == m3) == 1) {
+			cat(simID + ": FIXED\n");
+//			sim.treeSeqOutput("/Users/kmt/Dropbox/Research/sweeps/iHA/sweep.trees");
+//			sim.simulationFinished();
+		} else {
+			cat(simID + ": LOST - RESTARTING\n");
+			
+			sim.readFromPopulationFile("/tmp/slim_" + simID + ".trees");
+			setSeed(rdunif(1, 0, asInteger(2^32) - 1));
+		}
+	}
+	mut = sim.mutationsOfType(m3);
+	if (size(mut) == 0)
+		sim.simulationFinished();
+	else if (mut.selectionCoeff != 0.0)
+		if (sim.mutationFrequencies(NULL, mut) >= 0.5) {
+			mut.setSelectionCoeff(0.0);			
+//			sim.treeSeqOutput("/Users/kmt/Dropbox/Research/sweeps/iHA/sweep.trees");
+//			sim.simulationFinished();		
+		}
+
+}
+12000: late() {
+	sim.treeSeqOutput("/Users/kmt/Dropbox/Research/sweeps/iHA/sweep.trees");
+	sim.simulationFinished();
+}
+//10000 late() {
+//	sim.treeSeqOutput("/Users/kmt/Dropbox/Research/sweeps/iHA/background.trees");
+//	sim.simulationFinished();
+//}
