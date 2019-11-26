@@ -1,0 +1,58 @@
+
+initialize() {
+	initializeTreeSeq();
+	initializeMutationRate(0);
+	initializeMutationType("m1", 0.5, "f", 0.0);
+	initializeMutationType("m2", 1.0, "f", 0.01);        // introduced
+	initializeGenomicElementType("g1", m1, 1.0);
+	initializeGenomicElement(g1, 0, 10e6-1);
+	initializeRecombinationRate(1e-8);
+	initializeSex("A");
+}
+
+1 {
+	defineConstant("simID", getSeed());
+	sim.addSubpop("p1", 20000);
+}
+
+
+200000 late() {
+	// save the state of the simulation
+   sim.treeSeqOutput("/tmp/slim_" + simID + ".trees");
+
+	// introduce the sweep mutation
+	target = sample(p1.genomes, 1);
+	target.addNewDrawnMutation(m2, 5e6);
+}
+200000: late() {
+	if (sim.countOfMutationsOfType(m2) == 0)
+	{
+		fixed = (sum(sim.substitutions.mutationType == m2) == 1);
+		
+		if (fixed)
+		{
+			cat(simID + ": FIXED\n");
+			sim.treeSeqOutput("/Users/kmt/Dropbox/Research/iHA/completesweep.trees");
+			
+			sim.simulationFinished();
+		}
+		else
+		{
+			cat(simID + ": LOST – RESTARTING\n");
+			
+			// go back to generation 1000
+         sim.readFromPopulationFile("/tmp/slim_" + simID + ".trees");
+			
+			// start a newly seeded run
+			setSeed(rdunif(1, 0, asInteger(2^32) - 1));
+			
+			// re-introduce the sweep mutation
+			target = sample(p1.genomes, 1);
+			target.addNewDrawnMutation(m2, 5e6);
+		}
+	}
+}
+
+300000 {
+        sim.simulationFinished();
+}

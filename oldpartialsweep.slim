@@ -33,10 +33,6 @@ initialize() {
 
                         sim.deregisterScriptBlock(self);
                    
-//               		  write sweep when it is done
-                       sim.treeSeqOutput("/Users/kmt/Dropbox/Research/iHA/partialsweep.trees");
-					        sim.simulationFinished();     
-                        
                 }
         }
         else
@@ -49,8 +45,8 @@ initialize() {
 }
 
 //               		  write sweep when it is done
-300000 {
-//        sim.treeSeqOutput("partialsweep.trees");
+202000 {
+        sim.treeSeqOutput("/Users/kmt/Dropbox/Research/iHA/oldpartialsweep.trees");
         sim.simulationFinished();
 }
 

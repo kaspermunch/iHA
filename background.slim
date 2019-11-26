@@ -1,0 +1,23 @@
+
+initialize() {
+        initializeTreeSeq();
+        initializeMutationRate(0);
+        initializeMutationType("m1", 0.5, "f", 0.0);
+        initializeMutationType("m2", 1.0, "f", 0.1);        // introduced
+        initializeGenomicElementType("g1", m1, 1.0);
+        initializeGenomicElement(g1, 0, 10e6-1);
+        initializeRecombinationRate(1e-8);
+        initializeSex("A");
+}
+
+1 {
+        defineConstant("simID", getSeed());
+        sim.addSubpop("p1", 20000);
+}
+
+
+200000 {
+        sim.treeSeqOutput("/Users/kmt/Dropbox/Research/iHA/background.trees");
+        sim.simulationFinished();
+}
+
